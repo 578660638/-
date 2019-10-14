@@ -1,0 +1,29 @@
+import requests
+import re
+#页面的网址
+def jutiyemian(page):
+    URL1=f'http://www.htqyy.com/top/musicList/new?pageIndex={page}&pageSize=20'
+    response=requests.get(URL1).text
+    a=re.findall('title="(.*?)" sid="(.*?)">',response)
+    return a
+#具体歌曲的下载页面
+def xiazia(A):
+    URL2=f'http://f2.htqyy.com/play7/{A[1]}/mp3/10'
+    respones=requests.get(URL2,timeout=1)
+    if respones.status_code!=200:
+        respones=''
+        return respones
+    else:
+        respones=respones.content
+        with open(f'{A[0]}.mp3','wb') as f:
+            f.write(respones)
+
+if __name__=="__main__":
+    b=jutiyemian(2)
+    for i in b:
+        print(f'正在下载{i[0]}')
+        a=xiazia(i)
+        if a=='':
+            print('这个有毒，下载不了')
+
+
