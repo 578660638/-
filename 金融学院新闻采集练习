@@ -1,0 +1,39 @@
+import requests
+import re
+import csv
+url1 = 'https://www.hbfu.edu.cn/newsList?type=1'
+#处理列表页数据,列表页的id和详情页id是一样的
+def fanyi(page):
+    url = ' https://www.hbfu.edu.cn/news/queryListForPage'
+    dat = {
+        'start': f'{page * 20}',
+        'limit': '20',
+        'type': '1'
+    }
+    response = requests.post(url, data=dat, verify=False)
+    a = response.text
+    ids=re.findall('"id":(.*?),',a)
+    return list(set(ids))
+# 详情页
+def xiangqingye(ids):
+    url1='https://www.hbfu.edu.cn/news/findById'
+    dat={
+        'id': ids
+    }
+    respoese=requests.post(url1,data=dat,verify=False)
+    title=re.findall('"title":(.*?),',respoese.text)[0]
+    content=re.findall('"content":(.*?),',respoese.text)[0]
+    content=re.sub(r'\\n',' ',content)
+    content = re.sub(r'\\r', ' ', content)
+    content = re.sub(r'\\t', ' ', content)
+    content = re.sub(r'<p style=\\"text-indent:2em;\\"> ', ' ', content)
+    return f'{title},{content}'
+def baocun(a):
+    with open('xuexiao2.csv', 'a', encoding='utf-8') as fp:
+        fp.write(a + '\n')
+if __name__ == '__main__':
+    a=fanyi(0)
+    for i in a:
+        b=xiangqingye(i)
+        baocun(b)
+        print('ok')
