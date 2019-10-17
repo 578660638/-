@@ -1,0 +1,68 @@
+import requests
+import json
+#登录的网址
+def sibaliu():
+    session1=requests.Session()
+    url='http://xxz/auth/login'
+    url2='http://xx.xyz/user/checkin'
+    jso1={
+        'code': '""',
+        'email': '486x@qq.com',
+        'passwd': 'xxx',
+        'remember_me': 'false'
+    }
+    response=session1.post(url,json=jso1)
+    response=response.json()['msg']
+    response=json.dumps(response,ensure_ascii=False)
+    print(response+'486')
+    jso22={
+
+    }
+    response1=session1.post(url2,json=jso22)
+    print(response1.json()['msg'])
+
+
+def wuqiba():
+    session=requests.Session()
+    dengurl='http://hxg.xyz/auth/login'
+
+    qiandao='http://hx.xyz/user/checkin'
+
+    head={
+        'Accept': '*/*',
+        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Content-Length': '80',
+        'content-type': 'application/json',
+        #'Cookie': '__cfduid=d4e606bx566181516; _gid=GA1.2.1188126895.1571291020; ip=9e3be8847bdx2b12042606db2; expire_in=1571378807; _gat=1',
+        'Host': 'hulisang.xyz',
+        'Origin': 'http://hulisang.xyz',
+        'Pragma': 'no-cache',
+        'Referer': 'http://hulisang.xyz/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36',
+
+    }
+    jso={
+        #'email': '"578xx@qq.com", passwd: "xxx", code: "", remember_me: false',
+        'code': '""',
+        'email': '578x@qq.com',
+        'passwd': 'xxxx',
+        'remember_me': 'false',
+    }
+    jsoq={}
+    deng=session.post(dengurl,json=jso,headers=head)
+    a=session.post(qiandao,json=jsoq)
+
+    deng =deng.json()['msg']
+    deng = json.dumps(deng,ensure_ascii=False)
+    print(deng+'578')
+    print(a.json()['msg'])
+    if a.json()['msg']=='您似乎已经签到过了...':
+        sibaliu()
+
+if __name__ == '__main__':
+    wuqiba()
+
+
