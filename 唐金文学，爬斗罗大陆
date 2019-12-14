@@ -3,7 +3,7 @@ import re
 
 
 # 详情页
-def wangzhi(id1):
+def wangzhi(id1,name):
     url1 = f'https://www.sztjgold.com/files/article/html555/0/426/{id1}.html'
     head = {
         'Accept': 'text/javascript, application/javascript, application/ecmascript, application/x-ecmascript, */*; q=0.01',
@@ -35,15 +35,16 @@ def wangzhi(id1):
     a1 = a1.replace('顺 困 顶 枯 枵','')
     a1 = a1.replace('夺 回 顾 功 带 困','')
     a1 = a1.replace(' 顶 置 中','')
-    save(a1+'\n')
+
+    save(a1+'\n',name)
     # for i1 in a1:
     #     i1 = i1.replace('<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;', '\n')
     #     save(i1)
 
 
 # 保存
-def save(data):
-    with open('xiaoshu.txt', 'a', encoding='utf-8')as f:
+def save(data,name):
+    with open(f'{name}.txt', 'a', encoding='utf-8')as f:
         f.write(data)
 
 
@@ -57,15 +58,37 @@ def xiayiji(url):
             }
     text = requests.get(url, data=datas, headers=head)
     text1 = text.json()
+    id11=list()
+    name11=list()
     if text1.get('list'):
         for i in text1['list']:
             if i.get('chapterid'):
-                yield i['chapterid']
+                id11.append(i['chapterid'])
+                name11.append(i['chaptername'])
+    return zip(id11, name11)
+
 
 
 if __name__ == '__main__':
     url = 'https://www.sztjgold.com/files/0/19/19.json?cdnversions=5254377'
     text = xiayiji(url)
-    for i in text:
-        wangzhi(i)
-        print('一章保存完成')
+    # w=list()
+    for a in text:
+        # print(a[0])
+        # print('*'*20)
+        # w.append(a)
+        wangzhi(a[0],a[1])
+
+
+    # try:
+    #     while True:
+    #         num = 0
+    #         for a in text:
+    #             wangzhi(a[num][0],a[num][1])
+    #             num+=1
+    # except:
+    #     print('保存完畢')
+        # wangzhi(a[0], a[1])
+    # for a,b in text:
+    #     wangzhi(a,b)
+    #     print('一章保存完成')
