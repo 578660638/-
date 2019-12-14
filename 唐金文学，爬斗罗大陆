@@ -30,8 +30,12 @@ def wangzhi(id1):
 
     a1 = a1.replace(',', '')
     a1 = a1.replace("'", '')
+    a1 = a1.replace('茵 右 脚 楞 夺', "")
+    a1 = a1.replace('夺 粗 功 肖 功 地','')
+    a1 = a1.replace('顺 困 顶 枯 枵','')
+    a1 = a1.replace('夺 回 顾 功 带 困','')
+    a1 = a1.replace(' 顶 置 中','')
     save(a1+'\n')
-
     # for i1 in a1:
     #     i1 = i1.replace('<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;', '\n')
     #     save(i1)
