@@ -1,0 +1,67 @@
+import requests
+import re
+
+
+# 详情页
+def wangzhi(id1):
+    url1 = f'https://www.sztjgold.com/files/article/html555/0/426/{id1}.html'
+    head = {
+        'Accept': 'text/javascript, application/javascript, application/ecmascript, application/x-ecmascript, */*; q=0.01',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'Connection': 'keep-alive',
+        'Cookie': 'Hm_lvt_92aba3e4f105050c3554fc4ac3120577=1576305072; Hm_lpvt_92aba3e4f105050c3554fc4ac3120577=1576305072; Hm_lvt_555e306106120221f678d8630b62cae9=1576305072; Hm_lpvt_555e306106120221f678d8630b62cae9=1576305072',
+        'Host': 'www.sztjgold.com',
+        'Referer': 'https://www.sztjgold.com/chapter.html?1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+        'X-Requested-With': 'XMLHttpRequest'
+
+        }
+    a = requests.get(url1, headers=head)
+    a1 = a.text
+    a1 = re.findall("[\u4E00-\u9FFF]",a1)
+    #------------------------------<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;
+    a1 = str(a1)
+    # l=list()
+    # print(a1)
+    # for i in a1:
+    #     l1 = l.append(i)
+    #清洗字符串
+
+    a1 = a1.replace(',', '')
+    a1 = a1.replace("'", '')
+    save(a1+'\n')
+
+    # for i1 in a1:
+    #     i1 = i1.replace('<br /><br />&nbsp;&nbsp;&nbsp;&nbsp;', '\n')
+    #     save(i1)
+
+
+# 保存
+def save(data):
+    with open('xiaoshu.txt', 'a', encoding='utf-8')as f:
+        f.write(data)
+
+
+# 列表页
+def xiayiji(url):
+    datas = {'cdnversions': '5254377'}
+    head = {'Referer': 'https://www.sztjgold.com/chapter.html?1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+            'X-Requested-With': 'XMLHttpRequest'
+
+            }
+    text = requests.get(url, data=datas, headers=head)
+    text1 = text.json()
+    if text1.get('list'):
+        for i in text1['list']:
+            if i.get('chapterid'):
+                yield i['chapterid']
+
+
+if __name__ == '__main__':
+    url = 'https://www.sztjgold.com/files/0/19/19.json?cdnversions=5254377'
+    text = xiayiji(url)
+    for i in text:
+        wangzhi(i)
+        print('一章保存完成')
