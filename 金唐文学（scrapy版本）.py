@@ -48,6 +48,7 @@ class JinSpider(scrapy.Spider):
 
                     #获取id ,name,id用来翻页，name用来给文件命名
                     #item['id2'] = text.get('chapterid')
+                    #meta属性 使数据一一对应
 
                     id3 = dat.get('chapterid')
                     name3 = dat.get('chaptername')
