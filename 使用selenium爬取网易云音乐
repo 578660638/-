@@ -1,0 +1,37 @@
+from selenium import webdriver
+import time
+
+
+class YunSpider(object):
+    def __init__(self, url):
+        self.url = url
+        self.drive = webdriver.Firefox()
+
+    def getcontext(self):
+        self.drive.get(self.url)
+        # 切框
+        self.drive.switch_to.frame(0)
+        # 提取数据
+        for i in range(20):
+            js = 'window.scrollBy(0,8000)'
+            self.drive.execute_script(js)
+            elements = self.drive.find_elements_by_xpath('//div[@class="cmmts j-flag"]/div')
+            for i1 in elements:
+                a = i1.find_element_by_xpath('.//div[contains(@class,"cnt f-brk")]')
+                print(a.text)
+                YunSpider.savedata(a.text)
+            # 翻页
+            self.drive.find_element_by_link_text('下一页').click()
+            print('*' * 80)
+            time.sleep(0.1)
+
+    @staticmethod
+    def savedata(data):
+        with open('comment.txt', 'a', encoding='utf-8')as f:
+            f.write(data)
+
+
+if __name__ == '__main__':
+    URL = 'https://music.163.com/#/song?id=31108473'
+    con = YunSpider(URL)
+    con.getcontext()
