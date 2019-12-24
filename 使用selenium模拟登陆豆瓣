@@ -1,0 +1,32 @@
+from selenium import webdriver
+import time
+
+
+class DouBan(object):
+    def __init__(self, url):
+        self.url = url
+        self.drive = webdriver.Firefox()
+
+
+    def Denglu(self):
+        #在地址栏输入网址
+        self.drive.get(url)
+        #切框
+        self.drive.switch_to.frame(0)
+        #点击密码登录
+        selectpassword = self.drive.find_element_by_xpath('/html/body/div[1]/div[1]/ul[1]/li[2]')
+        selectpassword.click()
+        #找到id='usename'的
+        usename = self.drive.find_element_by_id('username')
+        usename.send_keys('account')
+        password = self.drive.find_element_by_id('password')
+        password.send_keys('password')
+        login = self.drive.find_element_by_xpath('/html/body/div[1]/div[2]/div[1]/div[5]')
+        login.click()
+
+
+if __name__ == '__main__':
+
+    url ='https://www.douban.com/'
+    douban = DouBan(url)
+    douban.Denglu()
