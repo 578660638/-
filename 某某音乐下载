@@ -1,0 +1,114 @@
+import requests
+import json
+
+
+def song():
+    music_info_list = []
+    nums ='10'
+    name = '张杰'
+    page ='1'
+    dat = {'accept': 'application/json, text/javascript, */*; q=0.01',
+           'accept-encoding': 'gzip, deflate, br',
+           'accept-language': 'zh-CN,zh;q=0.9',
+           'cookie': 'pgv_pvid=1802004005; ts_uid=9031321144; pgv_pvi=8189542400; RK=GcwsdW6tFK; ptcz=5d03c70bd08d52ff269c5200ccdc0a8482a0d02e62e4b8886b25d53b4656f5a1; psrf_qqopenid=93C78360A6B634ABA990B8030FC42BBB; psrf_qqrefresh_token=BCE7929D726494C4B78DACD5AC68FA99; psrf_qqunionid=372E5C3DA0D389CAEA141C57191DCECC; uin=578660638; psrf_qqaccess_token=660520DC668604D3A5FA55B13373F7D4; yqq_stat=0; player_exist=1; pgv_info=ssid=s8155399776; qqmusic_fromtag=66; pgv_si=s8297997312; yq_index=0; userAction=1; _qpsvr_localtk=0.3713259029017526; ptisp=cnc; psrf_access_token_expiresAt=1585235567; psrf_musickey_createtime=1577459567; qm_keyst=Q_H_L_2ys76u50e4OzkuRyTIIgoqjakOcdrusoo7oPOHMt-Oc1pNUMmyaHWCnGtlSIVE6; yplayer_open=0; ts_last=y.qq.com/portal/search.html',
+           'origin': 'https://y.qq.com',
+           'referer': 'https://y.qq.com/portal/search.html',
+           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36', }
+    # 搜索接口（简化后）
+    url = f'https://c.y.qq.com/soso/fcgi-bin/client_search_cp?n={nums}&w={name}&p={page}'
+    songxx = requests.get(url, data=dat)
+    # songxx = json.loads(songxx)
+    a = songxx.text
+    a = a[9:-1]
+    music_data = json.loads(a)
+    music_list = music_data['data']['song']['list']
+    for music in music_list:
+        music_name = music['songname']  # 歌曲名
+        songer = music['singer'][0]['name']  # 歌手名
+        songsmid = music['songmid']  # 歌曲mid
+        music_info_list.append((music_name, songer, songsmid))
+
+
+    return music_info_list
+
+
+
+
+# 获取具体的音乐guid,vkey,拼接网址
+def kvey(music_info_list):
+    data={
+
+'accept': 'application/json, text/javascript, */*; q=0.01',
+'accept-encoding': 'gzip, deflate, br',
+'accept-language': 'zh-CN,zh;q=0.9',
+#'cookie': 'pgv_pvid=1802004005; ts_uid=9031321144; pgv_pvi=8189542400; RK=GcwsdW6tFK; ptcz=5d03c70bd08d52ff269c5200ccdc0a8482a0d02e62e4b8886b25d53b4656f5a1; psrf_qqopenid=93C78360A6B634ABA990B8030FC42BBB; psrf_qqrefresh_token=BCE7929D726494C4B78DACD5AC68FA99; psrf_qqunionid=372E5C3DA0D389CAEA141C57191DCECC; uin=578660638; psrf_qqaccess_token=660520DC668604D3A5FA55B13373F7D4; ts_refer=www.so.com/s; userAction=1; yqq_stat=0; pgv_info=ssid=s9925458514; pgv_si=s34348032; _qpsvr_localtk=0.43778381130150246; ptisp=cnc; qm_keyst=Q_H_L_2y-38u50ea6vosqsgmsvmM4q69fMym_VEyho75l16u7BURIkXrl1raYaLftpmv5; psrf_access_token_expiresAt=1585362687; psrf_musickey_createtime=1577586687; player_exist=1; qqmusic_fromtag=66; yplayer_open=1; yq_index=0',
+'origin': 'https://y.qq.com',
+'referer': 'https://y.qq.com/portal/player.html',
+'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+    }
+    songlist=list()
+    for i in music_info_list:
+        music_name = i[0]
+        music_songer = i[1]
+        music_id = i[2]
+
+       #url = 'https://u.y.qq.com/cgi-bin/musicu.fcg?data={"req":{"module":"CDN.SrfCdnDispatchServer","method":"GetCdnDispatch","param":{"guid":"8846039534","calltype":0,"userip":""}},"req_0":{"module":"vkey.GetVkeyServer","method":"CgiGetVkey","param":{"guid":"8846039534","songmid":["%s"],"songtype":[0],"uin":"1152921504784213523","loginflag":1,"platform":"20"}},"comm":{"uin":"1152921504784213523","format":"json","ct":24,"cv":0}}
+        url = 'https://u.y.qq.com/cgi-bin/musicu.fcg?data={"req":{"module":"CDN.SrfCdnDispatchServer","method":"GetCdnDispatch","param":{"guid":"1802004005","calltype":0,"userip":""}},"req_0":{"module":"vkey.GetVkeyServer","method":"CgiGetVkey","param":{"guid":"1802004005","songmid":["%s"],"songtype":[0],"uin":"1152921504784213523","loginflag":1,"platform":"20"}},"comm":{"uin":"1152921504784213523","format":"json","ct":24,"cv":0}}' %music_id
+        response = requests.get(url)
+        response = json.loads(response.text)
+        #取出要拼接的字符串
+        urllast = response['req_0']['data']['midurlinfo'][0]['purl']
+        #拼接后的网址
+        detailsongurl = 'http://isure.stream.qqmusic.qq.com/'+urllast
+        # print(detailsongurl)
+        songlist.append((music_name,music_songer,detailsongurl))
+
+    return songlist
+
+
+    # conte = list()
+    #
+    # for i in urllast:
+    #     conte.append(i['vkey'])
+    #     conte.append(i['purl'])
+    #
+    # print(conte)
+
+
+
+def download(songsurl):
+    # print(songsurl[0][2])
+    url = songsurl[0][2]
+
+    for i in songsurl:
+        data = {'Accept': '*/*',
+                'Accept-Encoding': 'identity;q=1, *;q=0',
+                'Accept-Language': 'zh-CN,zh;q=0.9',
+                'Connection': 'keep-alive',
+                'Cookie': 'pgv_pvid=1802004005; pgv_pvi=8189542400; RK=GcwsdW6tFK; ptcz=5d03c70bd08d52ff269c5200ccdc0a8482a0d02e62e4b8886b25d53b4656f5a1; psrf_qqopenid=93C78360A6B634ABA990B8030FC42BBB; psrf_musickey_createtime=1577369013; psrf_qqrefresh_token=BCE7929D726494C4B78DACD5AC68FA99; psrf_qqunionid=372E5C3DA0D389CAEA141C57191DCECC; psrf_access_token_expiresAt=1585145013; qm_keyst=Q_H_L_2KRl4u50eCdueRXIo4ku0rxcIiUqb-zacBBNeNxXO6to5FHoiextmcAiWYlMrN7; uin=578660638; psrf_qqaccess_token=660520DC668604D3A5FA55B13373F7D4; pgv_info=ssid=s8155399776; qqmusic_fromtag=66; pgv_si=s8297997312',
+                'Host': 'ws.stream.qqmusic.qq.com',
+                'Range': 'bytes=0-',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+                }
+        print(i)
+
+        url1 = requests.get(i[2], headers=data).content
+
+        #
+        # # print(url1.json)
+        #
+        if url1:
+            with open(f'{i[0]}.mp3', 'wb') as f:
+                f.write(url1)
+
+
+if __name__ == '__main__':
+
+    # download(key)
+    music_info_list = song()
+    songs = kvey(music_info_list)
+    download(songs)
+
+
+
+
