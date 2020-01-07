@@ -1,0 +1,42 @@
+import requests
+# 导入正则 解析数据
+import re
+from parsel import Selector
+
+
+def requesturl():
+    response = requests.get('http://www.shuquge.com/txt/8659/index.html')
+    response.encoding = 'utf-8'
+    response = response.text
+
+    select = Selector(response)
+    title = select.xpath('//div[@class="listmain"]//dd/a/text()').getall()
+    url = select.xpath('//div[@class="listmain"]//dd/a/@href').getall()
+    url = ['http://www.shuquge.com/txt/8659/' + i for i in url]
+    all = zip(title, url)
+    for i in all:
+        yield i
+
+
+def detail(x):
+    for i in x:
+        a = requests.get(i[1])
+        a.encoding = 'utf-8'
+        a = a.text
+        a = Selector(a)
+        content = a.xpath('//div[@class="content"]//div[2]/text()').getall()
+        content1 = [re.sub(r"\r<br>\r<br>\xa0\xa0\xa0\xa0|\r', '\r',|\n\xa0\xa0\xa0\xa0|\xa0\xa0\xa0\xa0|", "", con) for con in content]
+        a= str(content1)
+        save(i[0],a)
+
+
+def save(name,content):
+    with open(f'{name}.txt','w',encoding='utf-8')as a:
+        a.write(content+'/n')
+
+
+
+
+if __name__ == "__main__":
+    x = requesturl()
+    detail(x)
