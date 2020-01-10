@@ -1,0 +1,54 @@
+# -*- coding: utf-8 -*-
+import scrapy
+
+import re
+from copy import deepcopy
+
+class BookSpider(scrapy.Spider):
+    name = 'book'
+    allowed_domains = ['suning.com']
+    start_urls = ['https://book.suning.com/?safp=d488778a.homepage1.99345513004.47']
+
+    def parse(self, response):
+
+        list_1 = response.xpath('//div[@class="submenu-left"]')
+        for ls in list_1:
+            item = {}
+            # 大分类
+            item['b_fl'] = ls.xpath('./p[@class="submenu-item"]/a/text()').extract_first()
+            # 小分类
+            s_ls = ls.xpath('./ul[@class="book-name-list clearfix"]//a')
+            for a in s_ls:
+                item['s_fl'] = a.xpath('./@href').extract_first()
+                item['s_fl_name'] = a.xpath('./text()').extract_first()
+                if item['s_fl'] is not None:
+                    yield scrapy.Request(item['s_fl'], callback=self.flmlisst, meta={'item': deepcopy(item)})
+
+    def flmlisst(self, response):
+        item = deepcopy(response.meta['item'])
+        # 图书列表页
+        list1 = response.xpath('//div [@class="res-info"]')
+        for ls in list1:
+            item['book_url'] = ls.xpath('./p[@class="sell-point"]/a/@href').extract_first()
+            item['book_name'] = ls.xpath('./p[@class="sell-point"]/a/text()').extract_first()
+            item['book_url'] = 'http:' + item['book_url']
+            yield scrapy.Request(item['book_url'], callback=self.detail, meta={'item1': deepcopy(item)})
+        #翻页
+
+        currentPage = int(re.findall('param.currentPage = "(.*?)";',response.body.decode())[0])
+
+        pageNumbers = int(re.findall('param.pageNumbers = "(.*?)";',response.body.decode())[0])
+
+
+        if currentPage<pageNumbers:
+            next_uel =item['s_fl']+f'?ci=503027&pg={currentPage+1}'
+            yield scrapy.Request(next_uel,callback=self.flmlisst,meta={"item":response.meta['item']})
+
+
+    # # 具体图书详情页
+    def detail(self, response):
+        item = response.meta['item1']
+        item['author'] = response.xpath('//div[@class="proinfo-main"]/ul/li/text()').extract_first()
+        item['author'] = item['author'].strip()
+        item['price'] = re.findall(r'"itemPrice"(.*?),', response.body.decode())
+        print(item)
