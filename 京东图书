@@ -1,0 +1,66 @@
+# -*- coding: utf-8 -*-
+import scrapy
+from copy import deepcopy
+import json
+
+
+
+class JdbooksSpider(scrapy.Spider):
+    name = 'jdbooks'
+    allowed_domains = ['jd.com']
+    start_urls = ['https://book.jd.com/booksort.html']
+
+    def parse(self, response):
+        item = {}
+        # 大分类
+        big_list = response.xpath('//div[@class="mc"]/dl/dt')
+        for dt in big_list:
+            item['big_list'] = dt.xpath('./a/text()').get()
+            # 小分类
+            smell_list = dt.xpath('./following-sibling::dd[1]/em')
+            for i in smell_list:
+                item['smell_list'] = i.xpath('./a/text()').get()
+                item['smell_url'] = i.xpath('./a/@href').get()
+                if item['smell_url'] is not None:
+                    item['smell_url'] = "https:" + item['smell_url']
+                    yield scrapy.Request(item['smell_url'], callback=self.parse_detail, meta={'item': deepcopy(item)})
+
+    def parse_detail(self, response):
+        item = response.meta['item']
+
+        booklist = response.xpath('//ul[@class="gl-warp clearfix"]/li')
+        for b in booklist:
+            item['bookname'] = b.xpath('.//div[@class="p-name"]/a/em/text()').get().strip()
+            item['bookurl'] = b.xpath('.//div[@class="p-name"]/a/@href').get()
+            item['bookpicurl'] = b.xpath('.//div[@class="p-img"]//img/@src').get()
+            item['bookurl'] = 'https:' + item['bookurl']
+            item['bookid'] = b.xpath('./div[@class="gl-i-wrap j-sku-item"]/@data-sku').get()
+            if item['bookpicurl'] is not None:
+                item['bookpicurl'] = 'https:' + item['bookpicurl']
+            # yield scrapy.Request(item['bookurl'], callback=self.xiangqing, meta={'item': deepcopy(item)})
+
+            #
+            if item['bookid'] is not None:
+                item['bookid'] = f'https://p.3.cn/prices/mgets?skuIds=J_{item["bookid"]},'
+                # print(item)
+                yield scrapy.Request(item['bookid'], callback=self.price1, meta={'item': deepcopy(item)})
+            #             a = requests.get(item['bookid']).text
+            #             item['bookprice'] = json.loads(a)[0]['op']
+        # 翻页
+        next_url = response.xpath('//a[@class="pn-next"]/@href').get()
+        if next_url is not None:
+            next_url = 'https://list.jd.com' + next_url
+            yield scrapy.Request(next_url, callback=self.parse_detail, meta={'item': deepcopy(item)})
+
+    def xiangqing(self, response):
+        # print('*'*60)
+        item = response.meta['item']
+        item['booker'] = response.xpath('//div[@id="name"]/div[@class="p-author"]/a/text()').get()
+        print(item)
+
+    def price1(self, response1):
+
+        print(response1.body)
+    #     item = response1.meta['item']
+    #     # item['price'] = json.loads(response.body.decode())[0]['op']
+    #     print(item['price'])
