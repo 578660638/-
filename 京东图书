@@ -37,15 +37,11 @@ class JdbooksSpider(scrapy.Spider):
             item['bookid'] = b.xpath('./div[@class="gl-i-wrap j-sku-item"]/@data-sku').get()
             if item['bookpicurl'] is not None:
                 item['bookpicurl'] = 'https:' + item['bookpicurl']
-            # yield scrapy.Request(item['bookurl'], callback=self.xiangqing, meta={'item': deepcopy(item)})
-
-            #
+                # yield scrapy.Request(item['bookurl'], callback=self.xiangqing, meta={'item': deepcopy(item)})
             if item['bookid'] is not None:
-                item['bookid'] = f'https://p.3.cn/prices/mgets?skuIds=J_{item["bookid"]},'
-                # print(item)
-                yield scrapy.Request(item['bookid'], callback=self.price1, meta={'item': deepcopy(item)})
-            #             a = requests.get(item['bookid']).text
-            #             item['bookprice'] = json.loads(a)[0]['op']
+                a = f'https://p.3.cn/prices/mgets?skuIds=J_{item["bookid"]}'
+                # print(a)
+                yield scrapy.Request(a, callback=self.parse_price1, meta={'item': deepcopy(item)},dont_filter=True)
         # 翻页
         next_url = response.xpath('//a[@class="pn-next"]/@href').get()
         if next_url is not None:
@@ -58,9 +54,10 @@ class JdbooksSpider(scrapy.Spider):
         item['booker'] = response.xpath('//div[@id="name"]/div[@class="p-author"]/a/text()').get()
         print(item)
 
-    def price1(self, response1):
-
-        print(response1.body)
+    def parse_price1(self, response1):
+        item = response1.meta['item']
+        item['price'] = json.loads(response1.body.decode())[0]['op']
+        print(item)
     #     item = response1.meta['item']
     #     # item['price'] = json.loads(response.body.decode())[0]['op']
     #     print(item['price'])
