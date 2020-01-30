@@ -1,0 +1,58 @@
+import requests
+from parsel import Selector
+import re
+
+
+def handle_decod(cont):
+    # 抖音web分享界面数字破解
+    regex_list = [
+        {'name': [' &#xe603; ', ' &#xe60d; ', ' &#xe616; '], 'value': 0},
+        {'name': [' &#xe602; ', ' &#xe60e; ', ' &#xe618; '], 'value': 1},
+        {'name': [' &#xe605; ', ' &#xe610; ', ' &#xe617; '], 'value': 2},
+        {'name': [' &#xe604; ', ' &#xe611; ', ' &#xe61a; '], 'value': 3},
+        {'name': [' &#xe606; ', ' &#xe60c; ', ' &#xe619; '], 'value': 4},
+        {'name': [' &#xe607; ', ' &#xe60f; ', ' &#xe61b; '], 'value': 5},
+        {'name': [' &#xe608; ', ' &#xe612; ', ' &#xe61f; '], 'value': 6},
+        {'name': [' &#xe60a; ', ' &#xe613; ', ' &#xe61c; '], 'value': 7},
+        {'name': [' &#xe60b; ', ' &#xe614; ', ' &#xe61d; '], 'value': 8},
+        {'name': [' &#xe609; ', ' &#xe615; ', ' &#xe61e; '], 'value': 9},
+    ]
+
+    for i1 in regex_list:
+        i1 = dict(i1)
+        for i2 in i1['name']:
+            cont = re.sub(i2,str(i1['value']),cont)
+    sele = Selector(cont)
+    user_info = {}
+    user_info['nickname'] = sele.xpath("//p[@class='nickname']/text()").get()
+    id1 = sele.xpath("//p[@class='shortid']/text()").get().replace(' ', '')
+    id2 = sele.xpath("//p[@class='shortid']/i/text()").getall()
+    user_info['qianming'] = sele.xpath("//p[@class='signature']/text()").getall()
+    user_info['guanzhu'] = ''.join(sele.xpath("//p[@class='follow-info']/span[@class='focus block']/span[@class='num']/i/text()").getall())
+    fens = ''.join(sele.xpath("//p[@class='follow-info']/span[@class='follower block']/span[@class='num']/i/text()").getall())
+    danwei = sele.xpath("//p[@class='follow-info']/span[@class='follower block']/span[@class='num']/text()").getall()[-1]
+    dianzan = ''.join(sele.xpath("//p[@class='follow-info']/span[@class='liked-num block']/span[@class='num']/i/text()").getall())
+    dianzandanwei = sele.xpath("//p[@class='follow-info']/span[@class='liked-num block']/span[@class='num']/text()").getall()[-1]
+
+    if danwei.strip() == 'w':
+        user_info['fens'] = str(int(fens)/10)+'w'#粉丝数
+    if dianzandanwei.strip() =='w':
+        user_info['dianzan'] = str(int(dianzan)/10)+'w'#点赞数
+
+    id2 = ''.join(id2)#列表转字符串
+    user_info['id'] = re.sub('抖音ID：','',id1+id2)
+    print(user_info)
+
+
+
+def handle_douyin_web():
+    share_web_yrl = "https://www.iesdouyin.com/share/user/61002725169"
+    header = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+    }
+    response = requests.get(share_web_yrl, headers=header)
+    handle_decod(response.text)
+
+
+if __name__ == '__main__':
+    handle_douyin_web()
